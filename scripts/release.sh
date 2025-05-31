@@ -41,11 +41,11 @@ fi
 echo "📝 更新 pubspec.yaml 版本号为 $VERSION"
 if command -v sed >/dev/null 2>&1; then
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
-        sed -i '' "s/^version: [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*+[0-9][0-9]*/version: $VERSION+1/" pubspec.yaml
+        # macOS - 使用更精确的匹配模式
+        sed -i '' "s/^version: [0-9]*\.[0-9]*\.[0-9]*+[0-9]*/version: $VERSION+1/" pubspec.yaml
     else
         # Linux
-        sed -i "s/^version: [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*+[0-9][0-9]*/version: $VERSION+1/" pubspec.yaml
+        sed -i "s/^version: [0-9]*\.[0-9]*\.[0-9]*+[0-9]*/version: $VERSION+1/" pubspec.yaml
     fi
 else
     echo "⚠️  请手动更新 pubspec.yaml 中的版本号为: $VERSION+1"
