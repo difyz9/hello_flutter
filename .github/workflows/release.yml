@@ -6,6 +6,10 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -135,67 +139,40 @@ jobs:
         id: tag
         run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
+      - name: List downloaded artifacts
+        run: |
+          echo "Downloaded artifacts:"
+          find . -name "*.tar.gz" -o -name "*.zip" | head -10
+
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.tag.outputs.tag }}
-          release_name: Release ${{ steps.tag.outputs.tag }}
-          body: |
-            ## Flutter Desktop App Release ${{ steps.tag.outputs.tag }}
-            
-            ### Downloads
-            - **Linux**: hello_flutter-linux-x64.tar.gz
-            - **Windows**: hello_flutter-windows-x64.zip  
-            - **macOS**: hello_flutter-macos.tar.gz
-            
-            ### Installation Instructions
-            
-            #### Linux
-            1. Download `hello_flutter-linux-x64.tar.gz`
-            2. Extract: `tar -xzf hello_flutter-linux-x64.tar.gz`
-            3. Run: `./hello_flutter`
-            
-            #### Windows
-            1. Download `hello_flutter-windows-x64.zip`
-            2. Extract the zip file
-            3. Run `hello_flutter.exe`
-            
-            #### macOS
-            1. Download `hello_flutter-macos.tar.gz`
-            2. Extract: `tar -xzf hello_flutter-macos.tar.gz`
-            3. Open `hello_flutter.app`
-          draft: false
-          prerelease: false
-
-      - name: Upload Linux Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./hello_flutter-linux/hello_flutter-linux-x64.tar.gz
-          asset_name: hello_flutter-linux-x64.tar.gz
-          asset_content_type: application/gzip
-
-      - name: Upload Windows Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./hello_flutter-windows/hello_flutter-windows-x64.zip
-          asset_name: hello_flutter-windows-x64.zip
-          asset_content_type: application/zip
-
-      - name: Upload macOS Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./hello_flutter-macos/hello_flutter-macos.tar.gz
-          asset_name: hello_flutter-macos.tar.gz
-          asset_content_type: application/gzip
+        run: |
+          gh release create ${{ steps.tag.outputs.tag }} \
+            --title "Release ${{ steps.tag.outputs.tag }}" \
+            --notes "## Flutter Desktop App Release ${{ steps.tag.outputs.tag }}
+          
+          ### Downloads
+          - **Linux**: hello_flutter-linux-x64.tar.gz
+          - **Windows**: hello_flutter-windows-x64.zip  
+          - **macOS**: hello_flutter-macos.tar.gz
+          
+          ### Installation Instructions
+          
+          #### Linux
+          1. Download \`hello_flutter-linux-x64.tar.gz\`
+          2. Extract: \`tar -xzf hello_flutter-linux-x64.tar.gz\`
+          3. Run: \`./hello_flutter\`
+          
+          #### Windows
+          1. Download \`hello_flutter-windows-x64.zip\`
+          2. Extract the zip file
+          3. Run \`hello_flutter.exe\`
+          
+          #### macOS
+          1. Download \`hello_flutter-macos.tar.gz\`
+          2. Extract: \`tar -xzf hello_flutter-macos.tar.gz\`
+          3. Open \`hello_flutter.app\`" \
+            ./hello_flutter-linux/hello_flutter-linux-x64.tar.gz \
+            ./hello_flutter-windows/hello_flutter-windows-x64.zip \
+            ./hello_flutter-macos/hello_flutter-macos.tar.gz
